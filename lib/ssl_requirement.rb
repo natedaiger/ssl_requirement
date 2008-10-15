@@ -19,6 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 module SslRequirement
+  
   def self.included(controller)
     controller.extend(ClassMethods)
     controller.before_filter(:ensure_proper_protocol)
@@ -47,7 +48,7 @@ module SslRequirement
 
   private
     def ensure_proper_protocol
-      return true if ssl_allowed?
+      return true if ssl_allowed? || RAILS_ENV == 'development'
 
       if ssl_required? && !request.ssl?
         redirect_to "https://" + request.host + request.request_uri
