@@ -19,10 +19,17 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 module SslRequirement
+  # SslRequirement.exclude_host
+  # Contains an array of host names that can access all pages plain text,
+  # not requiring SSL. By default, these are @localhost@ and @test.host@.
+  #
+  # Best set in an initializer.
+  mattr_accessor :exclude_host
   
   def self.included(controller)
     controller.extend(ClassMethods)
     controller.before_filter(:ensure_proper_protocol)
+    @@exclude_host = ['localhost', 'test.host']
   end
 
   module ClassMethods
@@ -48,16 +55,18 @@ module SslRequirement
 
   private
     def ensure_proper_protocol
-      return true if ssl_allowed? || RAILS_ENV == 'development'
-
-      if ssl_required? && !request.ssl?
-        redirect_to "https://" + request.host + request.request_uri
-        flash.keep
-        return false
-      elsif request.ssl? && !ssl_required?
-        redirect_to "http://" + request.host + request.request_uri
-        flash.keep
-        return false
+      return true if ssl_allowed?
+      
+      unless @@exclude_host.include?(request.host)
+        if ssl_required? && !request.ssl?
+          redirect_to "https://" + request.host + request.request_uri
+          flash.keep
+          return false
+        elsif request.ssl? && !ssl_required?
+          redirect_to "http://" + request.host + request.request_uri
+          flash.keep
+          return false
+        end
       end
     end
 end

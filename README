@@ -40,4 +40,16 @@ inclusion, it'll add the before_filter that validates the declarations. Some
 times you'll want to run other before_filters before that. They should then be
 declared ahead of including this module.
 
+Note that for your local development, you may want to exclude certain hosts
+from the redirect to https. For that, use exclude_host.
+
+Example:
+
+  # config/initializers/ssl_initializer.rb
+  
+  SslRequirement.exclude_host << 'my.host.com'
+  
+Because exclude_host is just an array, you can simply set it to [] if you
+want all hosts to be affected by this plugin.
+
 Copyright (c) 2005 David Heinemeier Hansson, released under the MIT license
